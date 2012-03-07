@@ -3,8 +3,14 @@ import urllib2
 import re
 import urlparse
 from collections import deque
+
+# This regex is not complete, so using Beautiful Soup to extract links from web page
 linkregex = re.compile(r'<a.*?href=[\'|"]?(.*?)[\'|"]?\s*>', re.IGNORECASE)
+
+# Goes to a depth 5 for the input url
 search_depth = 5
+
+from BeautifulSoup import BeautifulSoup
 
 class Crawler(object):
 
@@ -78,15 +84,19 @@ class GetLinks(object):
         request = urllib2.Request(self.url)
         response = urllib2.urlopen(request)
         page = response.read()
-
+        
         # Extract urls from the page
-        links = linkregex.findall(page)
-        for link in links:
+        # links = linkregex.findall(page)
+        # can't use regex here, some problems with that using beautiful soup
+        soup = BeautifulSoup(page)
+        tags = soup('a')
+        for tag in tags:
+            link = tag.get("href")
             if link.startswith('/'):
                 link = 'http://' + url.netloc + link
             elif link.startswith('#'):
                 if link == '#':
-                    links.remove(link)
+                    tags.remove(tag)
                     continue
                 else:
                     link = 'http://' + url.netloc + url.path
