@@ -8,7 +8,7 @@ from collections import deque
 linkregex = re.compile(r'<a.*?href=[\'|"]?(.*?)[\'|"]?\s*>', re.IGNORECASE)
 
 # Goes to a depth 5 for the input url
-search_depth = 5
+search_depth = 2
 
 from BeautifulSoup import BeautifulSoup
 
@@ -20,7 +20,8 @@ class Crawler(object):
         self.depth = depth
         self.host = urlparse.urlparse(self.root).netloc
         self.crawled = [self.root,]
-        self.links = 0
+        self.links = 1 #including the root url
+        self.externalLinks = []
 
     def crawl(self):
 
@@ -28,10 +29,10 @@ class Crawler(object):
         page.get()
         parentQ = deque()
         childQ = deque()
-        print(self.root + "\n" )
 
+        parentQ.append(self.root)
         for url in page.urls:
-            parentQ.append(url)
+            childQ.append(url)
             self.links+=1
 
         level = 0
@@ -41,30 +42,37 @@ class Crawler(object):
             try:
                 url = parentQ.popleft()
             except:
-
                 level+=1
                 print("\n")
                 if level == self.depth:
                     break
+
                 else:
-                    parentQ = childQ
+
+                    # transfer all urls from the child queue to the parent queue
+                    while childQ:
+                        url = childQ.popleft()
+                        parentQ.append(url)
+                        
                     
                     # break if the queue is empty
                     if not parentQ:
+                        print "No more links found"
+                        print "Finishing...."
                         break
-
-                    # clear the child queue
-                    del childQ[:] 
-                    continue
+                    else:
+                        continue
 
             if url not in self.crawled:
 
                 try:
+                    
                     # extract the host out of the new url
                     host = urlparse.urlparse(url).netloc
                     # if it matches with the current root .* includes any subdomains
                     if re.match(".*%s" % self.host, host):
 
+                        print "crawling: " + url
                         self.links+=1
                         print(url) 
                         self.crawled.append(url)
@@ -73,6 +81,8 @@ class Crawler(object):
                         for new_url in page.urls:
                             if new_url not in self.crawled:
                                 childQ.append(url)
+                    else:
+                        self.externalLinks.append(url)
 
                 except Exception, e:
                     print "ERROR: Can't process url '%s' (%s)" % (url, e)
@@ -124,9 +134,10 @@ def main():
     print "Crawling %s (Max Depth: %d)" % (url, search_depth)
     crawler = Crawler(url,search_depth)
     crawler.crawl()
-    print "\n Total links found " + str(crawler.links)
-    print "\n Total links crawled " + str(len(crawler.crawled))
-
+    print "Total internal links found " + str(crawler.links)
+    print "Total links crawled " + str(len(crawler.crawled))
+    print "External links:"
+    print "\n".join(crawler.externalLinks)
 
 if __name__ == "__main__":
     main()
