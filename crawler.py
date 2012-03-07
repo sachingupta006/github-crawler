@@ -36,7 +36,7 @@ class Crawler(object):
 
         level = 0
 
-        while parentQ:
+        while True:
 
             try:
                 url = parentQ.popleft()
@@ -48,6 +48,12 @@ class Crawler(object):
                     break
                 else:
                     parentQ = childQ
+                    
+                    # break if the queue is empty
+                    if not parentQ:
+                        break
+
+                    # clear the child queue
                     del childQ[:] 
                     continue
 
@@ -102,7 +108,9 @@ class GetLinks(object):
                     link = 'http://' + url.netloc + url.path
             elif not link.startswith('http'):
                 link = 'http://' + url[1] + '/' + link
-
+            
+            # specific to mycareerstack.com
+            # remove this
             if not "accounts" in link:    
                 self.urls.append(link)
 
@@ -116,8 +124,8 @@ def main():
     print "Crawling %s (Max Depth: %d)" % (url, search_depth)
     crawler = Crawler(url,search_depth)
     crawler.crawl()
-    print "\n Total links found " + crawler.links
-    print "\n Total links crawled " + len(crawler.crawled)
+    print "\n Total links found " + str(crawler.links)
+    print "\n Total links crawled " + str(len(crawler.crawled))
 
 
 if __name__ == "__main__":

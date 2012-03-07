@@ -5,4 +5,6 @@ for example to crawl mycareerstack.com give run the python script as
 
 python crawler.py http://mycareerstack.com
 
-The crawler crawls links upto depth 5, by depth 5  it means that the crawler does a breadth first search going down 5 levels from the root url
+The crawler crawls links upto depth 5, by depth 5  it means that the crawler does a breadth first search going down 5 levels from the root url. Since it does a breadth first search all the links of the root url are collected first and then they are visited and so on.
+
+
