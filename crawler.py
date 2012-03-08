@@ -8,7 +8,7 @@ from collections import deque
 linkregex = re.compile(r'<a.*?href=[\'|"]?(.*?)[\'|"]?\s*>', re.IGNORECASE)
 
 # Goes to a depth 5 for the input url
-search_depth = 2
+search_depth = 5
 
 from BeautifulSoup import BeautifulSoup
 
@@ -74,7 +74,6 @@ class Crawler(object):
 
                         print "crawling: " + url
                         self.links+=1
-                        print(url) 
                         self.crawled.append(url)
                         page = GetLinks(url)
                         page.get()
@@ -109,13 +108,13 @@ class GetLinks(object):
         for tag in tags:
             link = tag.get("href")
             if link.startswith('/'):
-                link = 'http://' + url.netloc + link
+                link = url.scheme + '://' + url.netloc + link
             elif link.startswith('#'):
                 if link == '#':
                     tags.remove(tag)
                     continue
                 else:
-                    link = 'http://' + url.netloc + url.path
+                    link = url.scheme + '://' + url.netloc + url.path
             elif not link.startswith('http'):
                 link = 'http://' + url[1] + '/' + link
             
