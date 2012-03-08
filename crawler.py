@@ -8,7 +8,7 @@ from collections import deque
 linkregex = re.compile(r'<a.*?href=[\'|"]?(.*?)[\'|"]?\s*>', re.IGNORECASE)
 
 # Goes to a depth 5 for the input url
-search_depth = 5
+search_depth = 1
 
 from BeautifulSoup import BeautifulSoup
 
@@ -19,9 +19,10 @@ class Crawler(object):
         self.root = root
         self.depth = depth
         self.host = urlparse.urlparse(self.root).netloc
-        self.crawled = [self.root,]
+        self.crawled = []
         self.links = 1 #including the root url
         self.externalLinks = []
+        self.uncrawled = []
 
     def crawl(self):
 
@@ -31,10 +32,6 @@ class Crawler(object):
         childQ = deque()
 
         parentQ.append(self.root)
-        for url in page.urls:
-            childQ.append(url)
-            self.links+=1
-
         level = 0
 
         while True:
@@ -79,12 +76,16 @@ class Crawler(object):
                         page.get()
                         for new_url in page.urls:
                             if new_url not in self.crawled:
-                                childQ.append(url)
+                                childQ.append(new_url)
                     else:
                         self.externalLinks.append(url)
 
                 except Exception, e:
                     print "ERROR: Can't process url '%s' (%s)" % (url, e)
+        
+        while childQ:
+            link = childQ.popleft()
+            self.uncrawled.append(link)
                     
 class GetLinks(object):
 
@@ -135,7 +136,11 @@ def main():
     crawler.crawl()
     print "Total internal links found " + str(crawler.links)
     print "Total links crawled " + str(len(crawler.crawled))
-    print "External links:"
+
+    print "\nUncrawled links "
+    print "\n".join(crawler.uncrawled)
+
+    print "\nExternal links:"
     print "\n".join(crawler.externalLinks)
 
 if __name__ == "__main__":
