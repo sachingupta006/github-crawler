@@ -1,0 +1,8 @@
+This project contains a simple python crawler. Right now I will keep things simple and build a crawler that will visit all the links on a page upto a certain depth. Maybe things can be extended later.
+
+To crawl a particular url, you need to give that as a command line argument
+for example to crawl mycareerstack.com give run the python script as
+
+python crawler.py http://mycareerstack.com
+
+The crawler crawls links upto depth 5, by depth 5  it means that the crawler does a breadth first search going down 5 levels from the root url. Since it does a breadth first search all the links of the root url are collected first and then they are visited and so on.
